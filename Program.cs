@@ -1,34 +1,59 @@
-﻿namespace PrivateMultipleObjects
+﻿using System;
+namespace PrivateMultipleObjects
 {
     // Base class: Ship
     class Ship
     {
-        private int _id;                    // unique Ship identifier
-        private string _name = "Ship";      // ship name
-        private Nation _nation;             // ship nationality
-        private int _speed;                 // speed factor
+        private int _Id;                    // Ship id #
+        private string _Name = "Ship";      // ship name
+        private Nation _Nation;             // ship nationality
+        private int _Speed;                 // speed factor
 
+        // default constructor
+        public Ship()
+        {
+            _Id = 0;
+            _Name = "Ship";
+            _Nation = Nation.USA; // Fixing the type conversion error
+        }
+
+        // parameterized constructor
+        public Ship(int id, string name, Nation nation, int speed) 
+        { 
+            this._Id = id;
+            this._Name = name;  
+            this._Nation = nation;  
+            this._Speed = speed;    
+        }
+
+        // Enum for different nationalities
         public enum Nation
         {
             Australia, Britain, France, Germany, Italy,
             Japan, Netherlands, USA, USSR
-        };               // ship nationality
+        }   
+        
+        //Enum for different hull designations - warships only
         protected enum Hull { BB, BC, CA, CL, CV, CVL, DD }
 
-        public void setId(int id) { this._id = id; }
-        public int getId() { return _id; }
-        public void setName(string name) { this._name = name; }
-        public string getName() { return _name; }
+        public void setId(int id) { this._Id = id; }
+        public int getId() { return _Id; }
+        public void setName(string name) { this._Name = name; }
+        public string getName() { return _Name; }
 
-        public void setSpeed(int speed) { this._speed = speed; }
-        public int getSpeed() { return _speed; }
-        public void setNation(Nation nation) { this._nation = nation; }
-        public Nation getNation() { return _nation; }
+        public void setSpeed(int speed) { this._Speed = speed; }
+        public int getSpeed() { return _Speed; }
+        public void setNation(Nation nation) { this._Nation = nation; }
+        public Nation getNation() { return _Nation; }
 
         public virtual void addChange()
         {
+            Console.WriteLine("Enter an integer ID Number:");
             Console.Write("ID=");
-            setId(int.Parse(Console.ReadLine()));
+            int tempId;
+            while (!int.TryParse(Console.ReadLine(), out tempId) || tempId <= 0)
+                Console.WriteLine("Please enter a valid positive integer");
+            setId(tempId);
 
             Console.Write("Name=");
             setName(Console.ReadLine());
@@ -53,15 +78,33 @@
 
     class Battleship : Ship 
     {
-        private int _attack;                // attack factor
-        private int _defense;               // defense factor
-        private Hull _hull = Hull.BB;
+        private int _Attack;                // attack factor
+        private int _Defense;               // defense factor
+
+        private Hull _Hull;
+
+        // default constructor
+        public Battleship() : base() 
+        { 
+            _Attack = 1;
+            _Defense = 1;
+            _Hull = Hull.BB;
+        }
+        // parameterized constructor
+        public Battleship(int id, string name, Nation nation, 
+            int speed, int attack, int defense) 
+            :base(id, name, nation, speed) 
+        { 
+            _Attack = attack;
+            _Defense = defense;
+            _Hull = Hull.BB;
+        }
         public override void print()
         {
-            base.print();
-            Console.WriteLine($"          Type: {_hull}");
-            Console.WriteLine($" Attack Factor = {getAttack()}" );
-            Console.WriteLine($"Defense Factor = {getDefense()}");
+            base.print();        
+            Console.WriteLine($" Attack Factor: {getAttack()}" );
+            Console.WriteLine($"Defense Factor: {getDefense()}");
+            Console.WriteLine($"   Warship Type: {_Hull}");
         }
 
         public override void addChange()
@@ -72,10 +115,10 @@
             Console.Write("Defense Factor = ");
             setDefense(int.Parse(Console.ReadLine()));
         }
-        public void setAttack(int attack) { this._attack = attack; }
-        public int getAttack() { return _attack; }
-        public void setDefense(int defense) { this._defense = defense; }
-        public int getDefense() { return _defense; }
+        public void setAttack(int attack) { this._Attack = attack; }
+        public int getAttack() { return _Attack; }
+        public void setDefense(int defense) { this._Defense = defense; }
+        public int getDefense() { return _Defense; }
     }
 
     internal class Program
@@ -149,36 +192,44 @@
                             }
                             break;
                         case 2:     // Change
-
-;
-
                             if (type == 1)  // Ship
                             {
                                 Console.WriteLine("Ship Record Number Listing");
                                 for (int i = 0; i < shipCount; i++)
                                 {
-                                    Console.WriteLine($"Rec#: {i + 1} | Ship Name: {ships[i].getName()}");
+                                    Console.WriteLine($"Rec#: {i + 1} " +
+                                        $" | ID#: {ships[i].getId()}" +
+                                        $" | Ship Name: {ships[i].getName()}" +
+                                        $" | Nation: {ships[i].getNation()}" + 
+                                        $" | Speed: {ships[i].getSpeed()}");
                                 }
                                 Console.WriteLine("----------------------------------");
-                                Console.Write("Enter the record number you want to change: ");
+                                Console.Write("Enter the record number you want to change (or 0 to quit): ");
                                 while (!int.TryParse(Console.ReadLine(), out rec))
                                     Console.Write("Not an integer. Enter the record number you want to change: ");
-                                while (rec > shipCount || rec < 1)
+                                while (rec > shipCount || rec < 0)
                                 {
                                     Console.WriteLine("The number you entered was out of range, try again");
                                     rec = int.Parse(Console.ReadLine());
                                 }
-                                ships[rec-1].addChange();
+                                if (rec != 0)           // Skip it if user enters "0"
+                                    ships[rec-1].addChange();
                             }
                             else    // Battleship
                             {
-                                Console.WriteLine("Battleship Record Number Listing");
+                                Console.WriteLine("Ship Record Number Listing");
                                 for (int i = 0; i < battleshipCount; i++)
                                 {
-                                    Console.WriteLine($"Rec#: {i + 1} | Ship Name: {battleships[i].getName()}");
+                                    Console.WriteLine($"Rec#: {i + 1} " +
+                                        $" | ID#: {battleships[i].getId()}" +
+                                        $" | Ship Name: {battleships[i].getName()}" +
+                                        $" | Nation: {battleships[i].getNation()}" +
+                                        $" | Speed: {battleships[i].getSpeed()}" +
+                                        $" | Attack: {battleships[i].getAttack()}" +
+                                        $" | Defense: {battleships[i].getDefense()}");
                                 }
                                 Console.WriteLine("----------------------------------");
-                                Console.Write("Enter the record number you want to change: ");
+                                Console.Write("Enter the record number you want to change (or 0 to quit): ");
                                 while (!int.TryParse(Console.ReadLine(), out rec))
                                     Console.Write("Not an integer. Enter the record number you want to change: ");
                                 while (rec > battleshipCount || rec < 0)
@@ -186,7 +237,8 @@
                                     Console.WriteLine("The number you entered was out of range, try again");
                                     rec = int.Parse(Console.ReadLine());
                                 }
-                                battleships[rec-1].addChange();
+                                if (rec != 0)           // Skip it if user enters "0"
+                                    battleships[rec-1].addChange();
                             }
                             break;
                         case 3:                 // Print All
